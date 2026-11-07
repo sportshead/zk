@@ -309,7 +309,8 @@ func (d *document) DocumentLinks() ([]documentLink, error) {
 					Start: byteOffsetToPosition(link.StartOffset, source, lineOffsets),
 					End:   byteOffsetToPosition(link.EndOffset, source, lineOffsets),
 				},
-				HasTitle:   len(link.Title) > 0,
+				LabelEnd:   byteOffsetToPosition(link.CloserOffset, source, lineOffsets),
+				HasTitle:   link.HasLabel,
 				IsWikiLink: true,
 			})
 		}
@@ -362,4 +363,7 @@ type documentLink struct {
 	// IsWikiLink indicates whether this link is a [[WikiLink]] instead of a
 	// regular Markdown link.
 	IsWikiLink bool
+	// LabelEnd is the position right after the label of a wiki link, before
+	// its closing brackets.
+	LabelEnd protocol.Position
 }

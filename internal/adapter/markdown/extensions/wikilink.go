@@ -25,6 +25,12 @@ type WikiLink struct {
 	StartOffset int
 	// EndOffset is the byte offset of the end of the link.
 	EndOffset int
+	// CloserOffset is the byte offset of the closing brackets, e.g. the
+	// position of ]] in [[href]].
+	CloserOffset int
+	// HasLabel indicates whether the link sets its label explicitly, e.g.
+	// [[href|label]].
+	HasLabel bool
 }
 
 func (w *wikiLink) Extend(m goldmark.Markdown) {
@@ -58,6 +64,7 @@ func (p *wlParser) Parse(parent ast.Node, block text.Reader, pc parser.Context) 
 		parsingLabel    = false // Found a | in a Wikilink, now we parse the link's label
 		openerCharCount = 0     // Number of [ encountered
 		closerCharCount = 0     // Number of ] encountered
+		closerPos       = 0     // Position of the first ] of the current closer run
 		endPos          = 0     // Last position of the link in the line
 	)
 
@@ -109,6 +116,9 @@ func (p *wlParser) Parse(parent ast.Node, block text.Reader, pc parser.Context) 
 				continue
 
 			case ']':
+				if closerCharCount == 0 {
+					closerPos = i
+				}
 				closerCharCount += 1
 				if closerCharCount == openerCharCount {
 					closed = true
@@ -141,7 +151,8 @@ func (p *wlParser) Parse(parent ast.Node, block text.Reader, pc parser.Context) 
 
 	href = strings.TrimSpace(href)
 	label = strings.TrimSpace(label)
-	if len(label) == 0 {
+	hasLabel := len(label) > 0
+	if !hasLabel {
 		label = href
 	}
 
@@ -152,6 +163,8 @@ func (p *wlParser) Parse(parent ast.Node, block text.Reader, pc parser.Context) 
 	link.AppendChild(link, ast.NewString([]byte(label)))
 	link.StartOffset = startOffset
 	link.EndOffset = startOffset + endPos
+	link.CloserOffset = startOffset + closerPos
+	link.HasLabel = hasLabel
 
 	return link
 }

@@ -574,3 +574,33 @@ func TestDocument_WordAt(t *testing.T) {
 		})
 	}
 }
+
+func TestDocumentLinks_WikiLinkLabel(t *testing.T) {
+	tests := []struct {
+		name     string
+		content  string
+		hasTitle bool
+		labelEnd protocol.Position
+	}{
+		{"plain", "See [[abc]]", false, protocol.Position{Line: 0, Character: 9}},
+		{"with label", "See [[abc|Title]]", true, protocol.Position{Line: 0, Character: 15}},
+		{"empty label", "See [[abc|]]", false, protocol.Position{Line: 0, Character: 10}},
+		{"uplink", "#[[abc]]", false, protocol.Position{Line: 0, Character: 6}},
+		{"downlink", "[[abc]]# next", false, protocol.Position{Line: 0, Character: 5}},
+		{"legacy downlink", "[[[abc]]]", false, protocol.Position{Line: 0, Character: 6}},
+		{"bracket in href", "[[a]b]]", false, protocol.Position{Line: 0, Character: 5}},
+		{"multibyte prefix", "Für [[abc]]", false, protocol.Position{Line: 0, Character: 9}},
+		{"second line", "line\n[[abc]]", false, protocol.Position{Line: 1, Character: 5}},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			doc := &document{Content: tt.content, Path: "/test/note.md"}
+			links, err := doc.DocumentLinks()
+			assert.Nil(t, err)
+			assert.Equal(t, len(links), 1)
+			assert.Equal(t, links[0].HasTitle, tt.hasTitle)
+			assert.Equal(t, links[0].LabelEnd, tt.labelEnd)
+		})
+	}
+}
