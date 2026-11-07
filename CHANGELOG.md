@@ -7,6 +7,11 @@ Format: `<description> (by @<contributor>, #<pr number>)`
 
 ## Unreleased
 
+### Added
+
+- Show the titles of wiki links as LSP inlay hints with `lsp.inlay.wiki-title`
+  (#729)
+
 ### Fixed
 
 - `lsp.completion.use-additional-text-edits` set in the global config is no

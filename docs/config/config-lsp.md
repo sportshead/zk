@@ -75,6 +75,27 @@ Example:
 missing-backlink = { level = "warning", position = "bottom" }
 ```
 
+## Inlay hints
+
+Use the `[lsp.inlay]` sub-section to show information inline, as virtual text
+rendered by your editor. Inlay hints require an editor supporting LSP 3.17.
+
+| Setting               | Type       | Default         | Description                                                   |
+| --------------------- | ---------- | --------------- | ------------------------------------------------------------- |
+| `wiki-title`          | `boolean`  | `false`         | Show the title of the linked note in wiki links without label |
+| `wiki-title-template` | `template` | `"\|{{title}}"` | Text of the wiki-title hint                                   |
+
+The hint is shown before the closing brackets, so `[[202605261823-fq2v]]`
+displays as `[[202605261823-fq2v|Für Elise]]`. Links to notes without a title
+get no hint.
+
+`wiki-title-template` accepts the same template context as the
+[completion](#completion) templates.
+
+Unlike the `wiki-title` diagnostic, inlay hints don't read as warnings in your
+editor, but they don't show up in diagnostic lists such as the quickfix list
+either. You can enable both.
+
 ## Complete example
 
 ```toml
@@ -89,6 +110,11 @@ dead-link = "error"
 self-link = "warning"
 # Report if backlinks are missing (shown at end of file).
 missing-backlink = { level = "hint", position = "bottom" }
+
+[lsp.inlay]
+# Show the titles of wiki-links inline.
+wiki-title = true
+wiki-title-template = "|{{title}}"
 
 [lsp.completion]
 # Show the note title in the completion pop-up, or fallback on its path if empty.

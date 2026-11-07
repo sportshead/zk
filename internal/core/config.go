@@ -76,6 +76,10 @@ func NewDefaultConfig() Config {
 				DeadLink:        LSPDiagnosticError,
 				MissingBacklink: MissingBacklinkConfig{}, // Disabled by default (Level = LSPDiagnosticNone)
 			},
+			Inlay: LSPInlayConfig{
+				WikiTitle:         false,
+				WikiTitleTemplate: "|{{title}}",
+			},
 		},
 		Filters: map[string]string{},
 		Aliases: map[string]string{},
@@ -195,6 +199,16 @@ type ToolConfig struct {
 type LSPConfig struct {
 	Completion  LSPCompletionConfig
 	Diagnostics LSPDiagnosticConfig
+	Inlay       LSPInlayConfig
+}
+
+// LSPInlayConfig holds the LSP inlay hints configuration.
+type LSPInlayConfig struct {
+	// WikiTitle shows the title of the target note in wiki links without a
+	// label.
+	WikiTitle bool
+	// WikiTitleTemplate is the template rendering the wiki-title hint.
+	WikiTitleTemplate string
 }
 
 // LSPCompletionConfig holds the LSP auto-completion configuration.
@@ -511,6 +525,15 @@ func ParseConfig(content []byte, path string, parentConfig Config, isGlobal bool
 		}
 	}
 
+	// LSP inlay hints
+	lspInlay := tomlConf.LSP.Inlay
+	if lspInlay.WikiTitle != nil {
+		config.LSP.Inlay.WikiTitle = *lspInlay.WikiTitle
+	}
+	if lspInlay.WikiTitleTemplate != nil {
+		config.LSP.Inlay.WikiTitleTemplate = *lspInlay.WikiTitleTemplate
+	}
+
 	// Filters
 	if tomlConf.Filters != nil {
 		maps.Copy(config.Filters, tomlConf.Filters)
@@ -647,6 +670,10 @@ type tomlLSPConfig struct {
 		DeadLink        *string                    `toml:"dead-link"`
 		SelfLink        *string                    `toml:"self-link"`
 		MissingBacklink *tomlMissingBacklinkConfig `toml:"missing-backlink"`
+	}
+	Inlay struct {
+		WikiTitle         *bool   `toml:"wiki-title"`
+		WikiTitleTemplate *string `toml:"wiki-title-template"`
 	}
 }
 

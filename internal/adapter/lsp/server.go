@@ -54,7 +54,8 @@ func NewServer(opts ServerOpts) *Server {
 	}
 
 	handler := protocol.Handler{}
-	glspServer := glspserv.NewServer(&handler, opts.Name, debug)
+	extHandler := &extendedHandler{Handler: &handler}
+	glspServer := glspserv.NewServer(extHandler, opts.Name, debug)
 
 	// Redirect zk's logger to GLSP's to avoid breaking the JSON-RPC protocol
 	// with unwanted output.
@@ -124,8 +125,11 @@ func NewServer(opts ServerOpts) *Server {
 
 		capabilities.ReferencesProvider = &protocol.ReferenceOptions{}
 
-		return protocol.InitializeResult{
-			Capabilities: capabilities,
+		return initializeResult{
+			Capabilities: serverCapabilities{
+				ServerCapabilities: capabilities,
+				InlayHintProvider:  true,
+			},
 			ServerInfo: &protocol.InitializeResultServerInfo{
 				Name:    opts.Name,
 				Version: &opts.Version,
@@ -189,6 +193,18 @@ func NewServer(opts ServerOpts) *Server {
 		_, err = notebook.Index(core.NoteIndexOpts{})
 		server.logger.Err(err)
 		return nil
+	}
+
+	extHandler.inlayHint = func(context *glsp.Context, params *inlayHintParams) ([]inlayHint, error) {
+		doc, ok := server.documents.Get(params.TextDocument.URI)
+		if !ok {
+			return nil, nil
+		}
+		notebook, err := server.notebookOf(doc)
+		if err != nil {
+			return nil, err
+		}
+		return server.buildInlayHints(notebook, doc, params.Range)
 	}
 
 	handler.TextDocumentCompletion = func(context *glsp.Context, params *protocol.CompletionParams) (any, error) {

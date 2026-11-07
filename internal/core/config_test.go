@@ -58,6 +58,9 @@ func TestParseDefaultConfig(t *testing.T) {
 				DeadLink:        LSPDiagnosticError,
 				MissingBacklink: MissingBacklinkConfig{},
 			},
+			Inlay: LSPInlayConfig{
+				WikiTitleTemplate: "|{{title}}",
+			},
 		},
 		Filters: make(map[string]string),
 		Aliases: make(map[string]string),
@@ -154,6 +157,10 @@ func TestParseComplete(t *testing.T) {
 		[lsp.diagnostics]
 		wiki-title = "hint"
 		dead-link = "none"
+
+		[lsp.inlay]
+		wiki-title = true
+		wiki-title-template = " ({{title}})"
 	`), ".zk/config.toml", NewDefaultConfig(), true)
 
 	assert.Nil(t, err)
@@ -274,6 +281,10 @@ func TestParseComplete(t *testing.T) {
 				WikiTitle:       LSPDiagnosticHint,
 				DeadLink:        LSPDiagnosticNone,
 				MissingBacklink: MissingBacklinkConfig{},
+			},
+			Inlay: LSPInlayConfig{
+				WikiTitle:         true,
+				WikiTitleTemplate: " ({{title}})",
 			},
 		},
 		Filters: map[string]string{
@@ -455,6 +466,9 @@ func TestParseMergesGroupConfig(t *testing.T) {
 				WikiTitle:       LSPDiagnosticNone,
 				DeadLink:        LSPDiagnosticError,
 				MissingBacklink: MissingBacklinkConfig{},
+			},
+			Inlay: LSPInlayConfig{
+				WikiTitleTemplate: "|{{title}}",
 			},
 		},
 		Filters: make(map[string]string),

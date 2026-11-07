@@ -148,6 +148,16 @@ $ cat .zk/config.toml
 >#missing-backlink = { level = "hint", position = "bottom" }
 >
 >
+>[lsp.inlay]
+># Show the title of the linked note in wiki links without a label, using
+># inlay hints (requires an LSP 3.17 client).
+>
+># Enable the wiki-link title hints.
+>#wiki-title = true
+># Template of the hint, appended before the closing brackets.
+>#wiki-title-template = "|\{{title}}"
+>
+>
 >[lsp.completion]
 ># Customize the completion pop-up of your LSP client.
 >
